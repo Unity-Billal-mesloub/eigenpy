@@ -6,6 +6,8 @@ name: CI - Linux via ROS
 # This determines when this workflow is run
 on:
   push:
+    branches:
+      - devel
     paths-ignore:
       - 'doc/**'
       - '.gitlab-ci.yml'
@@ -30,6 +32,7 @@ concurrency:
 jobs:
   CI:
     strategy:
+      fail-fast: false
       matrix:
         env:
           - {ROS_DISTRO: humble}

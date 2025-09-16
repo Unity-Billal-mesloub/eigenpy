@@ -2,6 +2,8 @@ name: CI - JRL-cmakemodules
 
 on:
   push:
+    branches:
+      - devel
     paths-ignore:
       - 'doc/**'
       - '.gitlab-ci.yml'

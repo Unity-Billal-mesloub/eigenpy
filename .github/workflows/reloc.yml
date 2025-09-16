@@ -2,6 +2,8 @@ name: CI - Ensure relocatable
 
 on:
   push:
+    branches:
+      - devel
     paths-ignore:
       - 'doc/**'
       - '.gitlab-ci.yml'

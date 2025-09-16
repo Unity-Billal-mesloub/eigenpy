@@ -3,17 +3,17 @@ name: "CI - Nix"
 on:
   push:
     branches:
-      - master
       - devel
   pull_request:
-    branches:
-      - master
-      - devel
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   nix:
     runs-on: "${{ matrix.os }}-latest"
     strategy:
+      fail-fast: false
       matrix:
         os: [ubuntu, macos]
     steps:
