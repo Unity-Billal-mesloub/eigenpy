@@ -111,20 +111,22 @@ struct overload_base_get_item_for_std_vector
       boost::python::slice slice) {
 
     namespace bp = boost::python;
-    Py_ssize_t start, stop, step, slicelen;
-    const Py_ssize_t n = static_cast<Py_ssize_t>(container.get().size());
-
-    if (PySlice_GetIndicesEx(slice.ptr(), n, &start, &stop, &step, &slicelen) != 0)
-      bp::throw_error_already_set();
 
     bp::list out;
-    for (Py_ssize_t k = 0; k < slicelen; ++k) {
-      Py_ssize_t idx = start + k * step;
-
-      // return a reference (not a copy), like your int-getitem
+    try {
+      auto rng = slice.get_indices(container.get().begin(), container.get().end());
+      // rng.start, rng.stop are iterators; rng.step is int; [start, stop] is closed
       typename bp::to_python_indirect<value_type&,
                                       bp::detail::make_reference_holder> convert;
-      out.append(bp::object(bp::handle<>(convert(container.get()[std::size_t(idx)]))));
+      // forward or backward
+      for (typename Container::iterator it = rng.start;; std::advance(it, rng.step)) {
+        out.append(bp::object(bp::handle<>(convert(*it))));
+        if (it == rng.stop) break;         // closed interval, include stop
+      }
+    } catch (const std::invalid_argument&) {
+      // Boost.Python specifies empty ranges throw invalid_argument.
+      // Return [] (matches Python's behavior for empty slices).
+      return bp::list();
     }
     return out;
   }
