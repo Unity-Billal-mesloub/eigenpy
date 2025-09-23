@@ -7,9 +7,11 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ## [Unreleased]
 
 ### Changed
-
 - Remove `accelerate.hpp` header that clash with Accelerate.hpp in non case sensitive OS ([#593](https://github.com/stack-of-tasks/eigenpy/pull/593)
-  We don't consider it an API break since this header was rarely used.
+  We don't consider it an API break since this header was rarely used.
+
+### Added
+- Support for Python slice, tuple and list indexing for `std::vector` bindings ([#592](https://github.com/stack-of-tasks/eigenpy/pull/592))
 
 ## [3.12.0] - 2025-08-12
 
