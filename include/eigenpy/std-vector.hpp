@@ -1,5 +1,6 @@
 ///
 /// Copyright (c) 2016-2024 CNRS INRIA
+/// Copyright (c) 2025-2025 Heriot-Watt University
 /// This file was taken from Pinocchio (header
 /// <pinocchio/bindings/python/utils/std-vector.hpp>)
 ///
@@ -84,11 +85,12 @@ struct overload_base_get_item_for_std_vector
 
   template <class Class>
   void visit(Class &cl) const {
-    cl.def("__getitem__", &base_get_item);
+    cl.def("__getitem__", &base_get_item_int)
+      .def("__getitem__", &base_get_item_slice);
   }
 
  private:
-  static boost::python::object base_get_item(
+  static boost::python::object base_get_item_int(
       boost::python::back_reference<Container &> container, PyObject *i_) {
     index_type idx = convert_index(container.get(), i_);
     typename Container::iterator i = container.get().begin();
@@ -102,6 +104,29 @@ struct overload_base_get_item_for_std_vector
                                     bp::detail::make_reference_holder>
         convert;
     return bp::object(bp::handle<>(convert(*i)));
+  }
+
+  static boost::python::object base_get_item_slice(
+      boost::python::back_reference<Container&> container,
+      boost::python::slice slice) {
+
+    namespace bp = boost::python;
+    Py_ssize_t start, stop, step, slicelen;
+    const Py_ssize_t n = static_cast<Py_ssize_t>(container.get().size());
+
+    if (PySlice_GetIndicesEx(slice.ptr(), n, &start, &stop, &step, &slicelen) != 0)
+      bp::throw_error_already_set();
+
+    bp::list out;
+    for (Py_ssize_t k = 0; k < slicelen; ++k) {
+      Py_ssize_t idx = start + k * step;
+
+      // return a reference (not a copy), like your int-getitem
+      typename bp::to_python_indirect<value_type&,
+                                      bp::detail::make_reference_holder> convert;
+      out.append(bp::object(bp::handle<>(convert(container.get()[std::size_t(idx)]))));
+    }
+    return out;
   }
 
   static index_type convert_index(Container &container, PyObject *i_) {
