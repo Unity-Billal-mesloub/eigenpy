@@ -86,9 +86,9 @@ struct overload_base_get_item_for_std_vector
   template <class Class>
   void visit(Class &cl) const {
     cl.def("__getitem__", &base_get_item_int)
-      .def("__getitem__", &base_get_item_slice)
-      .def("__getitem__", &base_get_item_list)
-      .def("__getitem__", &base_get_item_tuple);
+        .def("__getitem__", &base_get_item_slice)
+        .def("__getitem__", &base_get_item_list)
+        .def("__getitem__", &base_get_item_tuple);
   }
 
  private:
@@ -109,20 +109,24 @@ struct overload_base_get_item_for_std_vector
   }
 
   static boost::python::object base_get_item_slice(
-      boost::python::back_reference<Container&> container,
+      boost::python::back_reference<Container &> container,
       boost::python::slice slice) {
     bp::list out;
     try {
-      auto rng = slice.get_indices(container.get().begin(), container.get().end());
-      // rng.start, rng.stop are iterators; rng.step is int; [start, stop] is closed
-      typename bp::to_python_indirect<value_type&,
-                                      bp::detail::make_reference_holder> convert;
+      auto rng =
+          slice.get_indices(container.get().begin(), container.get().end());
+      // rng.start, rng.stop are iterators; rng.step is int; [start, stop] is
+      // closed
+      typename bp::to_python_indirect<value_type &,
+                                      bp::detail::make_reference_holder>
+          convert;
       // forward or backward
-      for (typename Container::iterator it = rng.start;; std::advance(it, rng.step)) {
+      for (typename Container::iterator it = rng.start;;
+           std::advance(it, rng.step)) {
         out.append(bp::object(bp::handle<>(convert(*it))));
-        if (it == rng.stop) break;         // closed interval, include stop
+        if (it == rng.stop) break;  // closed interval, include stop
       }
-    } catch (const std::invalid_argument&) {
+    } catch (const std::invalid_argument &) {
       // Boost.Python specifies empty ranges throw invalid_argument.
       // Return [] (matches Python's behavior for empty slices).
       return bp::list();
@@ -130,7 +134,8 @@ struct overload_base_get_item_for_std_vector
     return out;
   }
 
-  static bp::object base_get_item_list(bp::back_reference<Container&> c, bp::list idxs) {
+  static bp::object base_get_item_list(bp::back_reference<Container &> c,
+                                       bp::list idxs) {
     const Py_ssize_t m = bp::len(idxs);
     bp::list out;
     for (Py_ssize_t k = 0; k < m; ++k) {
@@ -146,7 +151,8 @@ struct overload_base_get_item_for_std_vector
     return out;
   }
 
-  static bp::object base_get_item_tuple(bp::back_reference<Container&> c, bp::tuple idxs) {
+  static bp::object base_get_item_tuple(bp::back_reference<Container &> c,
+                                        bp::tuple idxs) {
     const Py_ssize_t m = bp::len(idxs);
     bp::list out;
     for (Py_ssize_t k = 0; k < m; ++k) {
@@ -172,9 +178,10 @@ struct overload_base_get_item_for_std_vector
     return static_cast<index_type>(idx);
   }
 
-  static bp::object elem_ref(Container& c, index_type i) {
-    typename bp::to_python_indirect<value_type&,
-                                    bp::detail::make_reference_holder> conv;
+  static bp::object elem_ref(Container &c, index_type i) {
+    typename bp::to_python_indirect<value_type &,
+                                    bp::detail::make_reference_holder>
+        conv;
     return bp::object(bp::handle<>(conv(c[i])));
   }
 
