@@ -1,5 +1,6 @@
 ///
 /// Copyright (c) 2016-2024 CNRS INRIA
+/// Copyright (c) 2025-2025 Heriot-Watt University
 /// This file was taken from Pinocchio (header
 /// <pinocchio/bindings/python/utils/std-vector.hpp>)
 ///
@@ -84,11 +85,14 @@ struct overload_base_get_item_for_std_vector
 
   template <class Class>
   void visit(Class &cl) const {
-    cl.def("__getitem__", &base_get_item);
+    cl.def("__getitem__", &base_get_item_int)
+        .def("__getitem__", &base_get_item_slice)
+        .def("__getitem__", &base_get_item_list)
+        .def("__getitem__", &base_get_item_tuple);
   }
 
  private:
-  static boost::python::object base_get_item(
+  static boost::python::object base_get_item_int(
       boost::python::back_reference<Container &> container, PyObject *i_) {
     index_type idx = convert_index(container.get(), i_);
     typename Container::iterator i = container.get().begin();
@@ -102,6 +106,83 @@ struct overload_base_get_item_for_std_vector
                                     bp::detail::make_reference_holder>
         convert;
     return bp::object(bp::handle<>(convert(*i)));
+  }
+
+  static boost::python::object base_get_item_slice(
+      boost::python::back_reference<Container &> container,
+      boost::python::slice slice) {
+    bp::list out;
+    try {
+      auto rng =
+          slice.get_indices(container.get().begin(), container.get().end());
+      // rng.start, rng.stop are iterators; rng.step is int; [start, stop] is
+      // closed
+      typename bp::to_python_indirect<value_type &,
+                                      bp::detail::make_reference_holder>
+          convert;
+      // forward or backward
+      for (typename Container::iterator it = rng.start;;
+           std::advance(it, rng.step)) {
+        out.append(bp::object(bp::handle<>(convert(*it))));
+        if (it == rng.stop) break;  // closed interval, include stop
+      }
+    } catch (const std::invalid_argument &) {
+      // Boost.Python specifies empty ranges throw invalid_argument.
+      // Return [] (matches Python's behavior for empty slices).
+      return bp::list();
+    }
+    return out;
+  }
+
+  static bp::object base_get_item_list(bp::back_reference<Container &> c,
+                                       bp::list idxs) {
+    const Py_ssize_t m = bp::len(idxs);
+    bp::list out;
+    for (Py_ssize_t k = 0; k < m; ++k) {
+      bp::object obj = idxs[k];
+      bp::extract<long> ei(obj);
+      if (!ei.check()) {
+        PyErr_SetString(PyExc_TypeError, "indices must be integers");
+        bp::throw_error_already_set();
+      }
+      auto idx = normalize_index(c.get().size(), ei());
+      out.append(elem_ref(c.get(), idx));
+    }
+    return out;
+  }
+
+  static bp::object base_get_item_tuple(bp::back_reference<Container &> c,
+                                        bp::tuple idxs) {
+    const Py_ssize_t m = bp::len(idxs);
+    bp::list out;
+    for (Py_ssize_t k = 0; k < m; ++k) {
+      bp::object obj = idxs[k];
+      bp::extract<long> ei(obj);
+      if (!ei.check()) {
+        PyErr_SetString(PyExc_TypeError, "indices must be integers");
+        bp::throw_error_already_set();
+      }
+      auto idx = normalize_index(c.get().size(), ei());
+      out.append(elem_ref(c.get(), idx));
+    }
+    return out;
+  }
+
+  static index_type normalize_index(std::size_t n, long i) {
+    long idx = i;
+    if (idx < 0) idx += static_cast<long>(n);
+    if (idx < 0 || idx >= static_cast<long>(n)) {
+      PyErr_SetString(PyExc_IndexError, "index out of range");
+      bp::throw_error_already_set();
+    }
+    return static_cast<index_type>(idx);
+  }
+
+  static bp::object elem_ref(Container &c, index_type i) {
+    typename bp::to_python_indirect<value_type &,
+                                    bp::detail::make_reference_holder>
+        conv;
+    return bp::object(bp::handle<>(conv(c[i])));
   }
 
   static index_type convert_index(Container &container, PyObject *i_) {
