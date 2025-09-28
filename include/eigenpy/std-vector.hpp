@@ -86,8 +86,8 @@ struct overload_base_get_item_for_std_vector
   void visit(Class &cl) const {
     cl.def("__getitem__", &base_get_item_int)
         .def("__getitem__", &base_get_item_slice)
-        .def("__getitem__", &base_get_item_list)
-        .def("__getitem__", &base_get_item_tuple);
+        .def("__getitem__", &base_get_item_list_or_tuple<bp::list>)
+        .def("__getitem__", &base_get_item_list_or_tuple<bp::tuple>);
   }
 
  private:
@@ -132,25 +132,9 @@ struct overload_base_get_item_for_std_vector
     return out;
   }
 
-  static bp::object base_get_item_list(bp::back_reference<Container &> c,
-                                       bp::list idxs) {
-    const Py_ssize_t m = bp::len(idxs);
-    bp::list out;
-    for (Py_ssize_t k = 0; k < m; ++k) {
-      bp::object obj = idxs[k];
-      bp::extract<long> ei(obj);
-      if (!ei.check()) {
-        PyErr_SetString(PyExc_TypeError, "indices must be integers");
-        bp::throw_error_already_set();
-      }
-      auto idx = normalize_index(c.get().size(), ei());
-      out.append(elem_ref(c.get(), idx));
-    }
-    return out;
-  }
-
-  static bp::object base_get_item_tuple(bp::back_reference<Container &> c,
-                                        bp::tuple idxs) {
+  template <typename list_or_tuple>
+  static bp::object base_get_item_list_or_tuple(
+      bp::back_reference<Container &> c, list_or_tuple idxs) {
     const Py_ssize_t m = bp::len(idxs);
     bp::list out;
     for (Py_ssize_t k = 0; k < m; ++k) {
