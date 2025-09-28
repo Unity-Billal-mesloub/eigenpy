@@ -141,7 +141,7 @@ struct overload_base_get_item_for_std_vector
       bp::object obj = idxs[k];
       bp::extract<long> ei(obj);
       if (!ei.check()) {
-        PyErr_SetString(PyExc_TypeError, "indices must be integers");
+        PyErr_SetString(PyExc_TypeError, "Indices must be integers");
         bp::throw_error_already_set();
       }
       auto idx = normalize_index(c.get().size(), ei());
@@ -154,7 +154,7 @@ struct overload_base_get_item_for_std_vector
     long idx = i;
     if (idx < 0) idx += static_cast<long>(n);
     if (idx < 0 || idx >= static_cast<long>(n)) {
-      PyErr_SetString(PyExc_IndexError, "index out of range");
+      PyErr_SetString(PyExc_IndexError, "Index out of range");
       bp::throw_error_already_set();
     }
     return static_cast<index_type>(idx);
