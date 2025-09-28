@@ -1,6 +1,6 @@
 ///
-/// Copyright (c) 2016-2024 CNRS INRIA
-/// Copyright (c) 2025-2025 Heriot-Watt University
+/// Copyright (c) 2016-2025 CNRS INRIA
+/// Copyright (c) 2025 Heriot-Watt University
 /// This file was taken from Pinocchio (header
 /// <pinocchio/bindings/python/utils/std-vector.hpp>)
 ///
