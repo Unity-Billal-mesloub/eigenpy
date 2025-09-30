@@ -1,6 +1,6 @@
 ///
-/// Copyright (c) 2016-2024 CNRS INRIA
-/// Copyright (c) 2025-2025 Heriot-Watt University
+/// Copyright (c) 2016-2025 CNRS INRIA
+/// Copyright (c) 2025 Heriot-Watt University
 /// This file was taken from Pinocchio (header
 /// <pinocchio/bindings/python/utils/std-vector.hpp>)
 ///
@@ -53,7 +53,7 @@ bool from_python_list(PyObject *obj_ptr, T *) {
 
 template <typename vector_type, bool NoProxy>
 struct build_list {
-  static ::boost::python::list run(vector_type &vec, const bool deep_copy) {
+  static bp::list run(vector_type &vec, const bool deep_copy) {
     if (deep_copy) return build_list<vector_type, true>::run(vec, true);
 
     bp::list bp_list;
@@ -66,7 +66,7 @@ struct build_list {
 
 template <typename vector_type>
 struct build_list<vector_type, true> {
-  static ::boost::python::list run(vector_type &vec, const bool) {
+  static bp::list run(vector_type &vec, const bool) {
     typedef bp::iterator<vector_type> iterator;
     return bp::list(iterator()(vec));
   }
@@ -77,8 +77,7 @@ struct build_list<vector_type, true> {
 /// them.
 template <typename Container>
 struct overload_base_get_item_for_std_vector
-    : public boost::python::def_visitor<
-          overload_base_get_item_for_std_vector<Container>> {
+    : public bp::def_visitor<overload_base_get_item_for_std_vector<Container>> {
   typedef typename Container::value_type value_type;
   typedef typename Container::value_type data_type;
   typedef size_t index_type;
@@ -87,13 +86,13 @@ struct overload_base_get_item_for_std_vector
   void visit(Class &cl) const {
     cl.def("__getitem__", &base_get_item_int)
         .def("__getitem__", &base_get_item_slice)
-        .def("__getitem__", &base_get_item_list)
-        .def("__getitem__", &base_get_item_tuple);
+        .def("__getitem__", &base_get_item_list_or_tuple<bp::list>)
+        .def("__getitem__", &base_get_item_list_or_tuple<bp::tuple>);
   }
 
  private:
-  static boost::python::object base_get_item_int(
-      boost::python::back_reference<Container &> container, PyObject *i_) {
+  static bp::object base_get_item_int(bp::back_reference<Container &> container,
+                                      PyObject *i_) {
     index_type idx = convert_index(container.get(), i_);
     typename Container::iterator i = container.get().begin();
     std::advance(i, idx);
@@ -108,9 +107,8 @@ struct overload_base_get_item_for_std_vector
     return bp::object(bp::handle<>(convert(*i)));
   }
 
-  static boost::python::object base_get_item_slice(
-      boost::python::back_reference<Container &> container,
-      boost::python::slice slice) {
+  static bp::object base_get_item_slice(
+      bp::back_reference<Container &> container, bp::slice slice) {
     bp::list out;
     try {
       auto rng =
@@ -134,32 +132,16 @@ struct overload_base_get_item_for_std_vector
     return out;
   }
 
-  static bp::object base_get_item_list(bp::back_reference<Container &> c,
-                                       bp::list idxs) {
+  template <typename list_or_tuple>
+  static bp::object base_get_item_list_or_tuple(
+      bp::back_reference<Container &> c, list_or_tuple idxs) {
     const Py_ssize_t m = bp::len(idxs);
     bp::list out;
     for (Py_ssize_t k = 0; k < m; ++k) {
       bp::object obj = idxs[k];
       bp::extract<long> ei(obj);
       if (!ei.check()) {
-        PyErr_SetString(PyExc_TypeError, "indices must be integers");
-        bp::throw_error_already_set();
-      }
-      auto idx = normalize_index(c.get().size(), ei());
-      out.append(elem_ref(c.get(), idx));
-    }
-    return out;
-  }
-
-  static bp::object base_get_item_tuple(bp::back_reference<Container &> c,
-                                        bp::tuple idxs) {
-    const Py_ssize_t m = bp::len(idxs);
-    bp::list out;
-    for (Py_ssize_t k = 0; k < m; ++k) {
-      bp::object obj = idxs[k];
-      bp::extract<long> ei(obj);
-      if (!ei.check()) {
-        PyErr_SetString(PyExc_TypeError, "indices must be integers");
+        PyErr_SetString(PyExc_TypeError, "Indices must be integers");
         bp::throw_error_already_set();
       }
       auto idx = normalize_index(c.get().size(), ei());
@@ -172,7 +154,7 @@ struct overload_base_get_item_for_std_vector
     long idx = i;
     if (idx < 0) idx += static_cast<long>(n);
     if (idx < 0 || idx >= static_cast<long>(n)) {
-      PyErr_SetString(PyExc_IndexError, "index out of range");
+      PyErr_SetString(PyExc_IndexError, "Index out of range");
       bp::throw_error_already_set();
     }
     return static_cast<index_type>(idx);
@@ -225,7 +207,7 @@ struct extract_to_eigen_ref
   extract_to_eigen_ref(api::object const &o) : base(o.ptr()) {}
 };
 
-/// \brief Specialization of the boost::python::extract struct for references to
+/// \brief Specialization of the bp::extract struct for references to
 /// Eigen matrix objects.
 template <typename Scalar, int Rows, int Cols, int Options, int MaxRows,
           int MaxCols>
@@ -366,9 +348,8 @@ struct StdContainerFromPythonList {
 
   /// \brief Allocate the std::vector and fill it with the element contained in
   /// the list
-  static void construct(
-      PyObject *obj_ptr,
-      boost::python::converter::rvalue_from_python_stage1_data *memory) {
+  static void construct(PyObject *obj_ptr,
+                        bp::converter::rvalue_from_python_stage1_data *memory) {
     // Extract the list
     bp::object bp_obj(bp::handle<>(bp::borrowed(obj_ptr)));
     bp::list bp_list(bp_obj);
@@ -389,12 +370,11 @@ struct StdContainerFromPythonList {
   }
 
   static void register_converter() {
-    ::boost::python::converter::registry::push_back(
-        &convertible, &construct, ::boost::python::type_id<vector_type>());
+    bp::converter::registry::push_back(&convertible, &construct,
+                                       bp::type_id<vector_type>());
   }
 
-  static ::boost::python::list tolist(vector_type &self,
-                                      const bool deep_copy = false) {
+  static bp::list tolist(vector_type &self, const bool deep_copy = false) {
     return details::build_list<vector_type, NoProxy>::run(self, deep_copy);
   }
 };
@@ -428,7 +408,7 @@ struct contains_algo<T, false> {
 
 template <class Container, bool NoProxy>
 struct contains_vector_derived_policies
-    : public ::boost::python::vector_indexing_suite<
+    : public bp::vector_indexing_suite<
           Container, NoProxy,
           contains_vector_derived_policies<Container, NoProxy>> {
   typedef typename Container::value_type key_type;
@@ -445,7 +425,7 @@ struct contains_vector_derived_policies
 ///
 template <typename Container, bool NoProxy, typename CoVisitor>
 struct ExposeStdMethodToStdVector
-    : public boost::python::def_visitor<
+    : public bp::def_visitor<
           ExposeStdMethodToStdVector<Container, NoProxy, CoVisitor>> {
   typedef StdContainerFromPythonList<Container, NoProxy>
       FromPythonListConverter;
@@ -533,7 +513,7 @@ struct StdVectorPythonVisitor {
       cl.def(IdVisitor<vector_type>());
 
       // Standard vector indexing definition
-      boost::python::vector_indexing_suite<
+      bp::vector_indexing_suite<
           vector_type, NoProxy,
           internal::contains_vector_derived_policies<vector_type, NoProxy>>
           vector_indexing;
