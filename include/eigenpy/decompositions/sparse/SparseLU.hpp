@@ -98,8 +98,14 @@ struct SparseLUVisitor : public boost::python::def_visitor<
 
   typedef typename Solver::SCMatrix SCMatrix;
   typedef typename MatrixType::StorageIndex StorageIndex;
+
+#if EIGEN_VERSION_AT_LEAST(3, 4, 90)
+  typedef Eigen::Map<Eigen::SparseMatrix<Scalar, Eigen::ColMajor, StorageIndex>>
+      MappedSparseMatrix;
+#else
   typedef Eigen::MappedSparseMatrix<Scalar, Eigen::ColMajor, StorageIndex>
       MappedSparseMatrix;
+#endif
   typedef Eigen::SparseLUMatrixLReturnType<SCMatrix> LType;
   typedef Eigen::SparseLUMatrixUReturnType<SCMatrix, MappedSparseMatrix> UType;
 

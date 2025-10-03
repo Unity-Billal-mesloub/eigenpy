@@ -35,22 +35,27 @@ struct BDCSVDVisitor
 
         .def("cols", &Solver::cols, bp::arg("self"),
              "Returns the number of columns. ")
-        .def("compute",
-             (Solver & (Solver::*)(const MatrixType &matrix)) & Solver::compute,
-             bp::args("self", "matrix"),
-             "Method performing the decomposition of given matrix. Computes "
-             "Thin/Full "
-             "unitaries U/V if specified using the Options template parameter "
-             "or the class constructor. ",
-             bp::return_self<>())
-        .def("compute",
-             (Solver & (Solver::*)(const MatrixType &matrix,
-                                   unsigned int computationOptions)) &
-                 Solver::compute,
-             bp::args("self", "matrix", "computationOptions"),
-             "Method performing the decomposition of given matrix, as "
-             "specified by the computationOptions parameter.  ",
-             bp::return_self<>())
+        .def(
+            "compute",
+            +[](Solver &self, const MatrixType &matrix) -> Solver & {
+              return self.compute(matrix);
+            },
+            bp::args("self", "matrix"),
+            "Method performing the decomposition of given matrix. Computes "
+            "Thin/Full "
+            "unitaries U/V if specified using the Options template parameter "
+            "or the class constructor. ",
+            bp::return_self<>())
+        .def(
+            "compute",
+            +[](Solver &self, const MatrixType &matrix,
+                unsigned int computationOptions) -> Solver & {
+              return self.compute(matrix, computationOptions);
+            },
+            bp::args("self", "matrix", "computationOptions"),
+            "Method performing the decomposition of given matrix, as "
+            "specified by the computationOptions parameter.  ",
+            bp::return_self<>())
         .def("rows", &Solver::rows, bp::arg("self"),
              "Returns the number of rows. ")
         .def("setSwitchSize", &Solver::setSwitchSize, bp::args("self", "s"))

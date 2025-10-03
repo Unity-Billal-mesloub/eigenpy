@@ -18,7 +18,9 @@ namespace eigenpy {
 template <typename JacobiSVD>
 struct JacobiSVDVisitor
     : public boost::python::def_visitor<JacobiSVDVisitor<JacobiSVD>> {
+  typedef JacobiSVD Solver;
   typedef typename JacobiSVD::MatrixType MatrixType;
+  typedef Eigen::MatrixBase<MatrixType> MatrixBaseType;
   typedef typename MatrixType::Scalar Scalar;
 
   template <class PyClass>
@@ -34,23 +36,27 @@ struct JacobiSVDVisitor
 
         .def("cols", &JacobiSVD::cols, bp::arg("self"),
              "Returns the number of columns. ")
-        .def("compute",
-             (JacobiSVD & (JacobiSVD::*)(const MatrixType &matrix)) &
-                 JacobiSVD::compute,
-             bp::args("self", "matrix"),
-             "Method performing the decomposition of given matrix. Computes "
-             "Thin/Full "
-             "unitaries U/V if specified using the Options template parameter "
-             "or the class constructor. ",
-             bp::return_self<>())
-        .def("compute",
-             (JacobiSVD & (JacobiSVD::*)(const MatrixType &matrix,
-                                         unsigned int computationOptions)) &
-                 JacobiSVD::compute,
-             bp::args("self", "matrix", "computationOptions"),
-             "Method performing the decomposition of given matrix, as "
-             "specified by the computationOptions parameter.  ",
-             bp::return_self<>())
+        .def(
+            "compute",
+            +[](Solver &self, const MatrixType &matrix) -> Solver & {
+              return self.compute(matrix);
+            },
+            bp::args("self", "matrix"),
+            "Method performing the decomposition of given matrix. Computes "
+            "Thin/Full "
+            "unitaries U/V if specified using the Options template parameter "
+            "or the class constructor. ",
+            bp::return_self<>())
+        .def(
+            "compute",
+            +[](Solver &self, const MatrixType &matrix,
+                unsigned int computationOptions) -> Solver & {
+              return self.compute(matrix, computationOptions);
+            },
+            bp::args("self", "matrix", "computation_options"),
+            "Method performing the decomposition of given matrix, as "
+            "specified by the computationOptions parameter.  ",
+            bp::return_self<>())
         .def("rows", &JacobiSVD::rows, bp::arg("self"),
              "Returns the number of rows.")
 

@@ -19,16 +19,27 @@
           };
           devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
           packages = {
-            default = self'.packages.eigenpy;
-            eigen = pkgs.eigen.overrideAttrs {
-              # Apply https://gitlab.com/libeigen/eigen/-/merge_requests/977
-              postPatch = ''
-                substituteInPlace Eigen/src/SVD/BDCSVD.h \
-                  --replace-fail "if (l == 0) {" "if (i >= k && l == 0) {"
-              '';
-            };
-            eigenpy =
-              (pkgs.python3Packages.eigenpy.override { inherit (self'.packages) eigen; }).overrideAttrs
+            default = self'.packages.eigenpy-eigen5;
+            eigen3 = pkgs.eigen.overrideAttrs (super: rec {
+              version = "3.4.1";
+              src = pkgs.fetchFromGitLab {
+                inherit (super.src) owner repo;
+                tag = version;
+                hash = "sha256-NSq1tUfy2thz5gtsyASsKeYE4vMf71aSG4uXfrX86rk=";
+              };
+              patches = [ ];
+              postPatch = "";
+            });
+            eigen5 = self'.packages.eigen3.overrideAttrs (super: rec {
+              version = "5.0.0";
+              src = pkgs.fetchFromGitLab {
+                inherit (super.src) owner repo;
+                tag = version;
+                hash = "sha256-L1KUFZsaibC/FD6abTXrT3pvaFhbYnw+GaWsxM2gaxM=";
+              };
+            });
+            eigenpy-eigen3 =
+              (pkgs.python3Packages.eigenpy.override { eigen = self'.packages.eigen3; }).overrideAttrs
                 (_: {
                   src = pkgs.lib.fileset.toSource {
                     root = ./.;
@@ -43,6 +54,7 @@
                     ];
                   };
                 });
+            eigenpy-eigen5 = self'.packages.eigenpy-eigen3.override { eigen = self'.packages.eigen5; };
           };
         };
     };
