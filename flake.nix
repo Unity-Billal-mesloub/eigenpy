@@ -20,13 +20,16 @@
           devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
           packages = {
             default = self'.packages.eigenpy;
-            eigen = pkgs.eigen.overrideAttrs {
-              # Apply https://gitlab.com/libeigen/eigen/-/merge_requests/977
-              postPatch = ''
-                substituteInPlace Eigen/src/SVD/BDCSVD.h \
-                  --replace-fail "if (l == 0) {" "if (i >= k && l == 0) {"
-              '';
-            };
+            # Test eigen v5
+            eigen = pkgs.eigen.overrideAttrs (super: {
+              src = pkgs.fetchFromGitLab {
+                inherit (super.src) owner repo;
+                tag = "5.0.0";
+                hash = "sha256-L1KUFZsaibC/FD6abTXrT3pvaFhbYnw+GaWsxM2gaxM=";
+              };
+              patches = [ ];
+              postPatch = "";
+            });
             eigenpy =
               (pkgs.python3Packages.eigenpy.override { inherit (self'.packages) eigen; }).overrideAttrs
                 (_: {
