@@ -24,7 +24,7 @@ struct JacobiSVDVisitor
   typedef typename MatrixType::Scalar Scalar;
 
   template <class PyClass>
-  void visit(PyClass &cl) const {
+  void visit(PyClass& cl) const {
     cl.def(bp::init<>(bp::arg("self"), "Default constructor"))
         .def(bp::init<Eigen::DenseIndex, Eigen::DenseIndex,
                       bp::optional<unsigned int>>(
@@ -38,7 +38,7 @@ struct JacobiSVDVisitor
              "Returns the number of columns. ")
         .def(
             "compute",
-            +[](Solver &self, const MatrixType &matrix) -> Solver & {
+            +[](Solver& self, const MatrixType& matrix) -> Solver& {
               return self.compute(matrix);
             },
             bp::args("self", "matrix"),
@@ -49,8 +49,8 @@ struct JacobiSVDVisitor
             bp::return_self<>())
         .def(
             "compute",
-            +[](Solver &self, const MatrixType &matrix,
-                unsigned int computationOptions) -> Solver & {
+            +[](Solver& self, const MatrixType& matrix,
+                unsigned int computationOptions) -> Solver& {
               return self.compute(matrix, computationOptions);
             },
             bp::args("self", "matrix", "computation_options"),
@@ -69,7 +69,7 @@ struct JacobiSVDVisitor
     expose(classname);
   }
 
-  static void expose(const std::string &name) {
+  static void expose(const std::string& name) {
     bp::class_<JacobiSVD, boost::noncopyable>(
         name.c_str(),
         "Two-sided Jacobi SVD decomposition of a rectangular matrix. \n\n"

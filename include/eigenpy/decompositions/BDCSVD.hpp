@@ -23,7 +23,7 @@ struct BDCSVDVisitor
   typedef typename MatrixType::Scalar Scalar;
 
   template <class PyClass>
-  void visit(PyClass &cl) const {
+  void visit(PyClass& cl) const {
     cl.def(bp::init<>(bp::arg("self"), "Default constructor"))
         .def(bp::init<Eigen::DenseIndex, Eigen::DenseIndex,
                       bp::optional<unsigned int>>(
@@ -37,7 +37,7 @@ struct BDCSVDVisitor
              "Returns the number of columns. ")
         .def(
             "compute",
-            +[](Solver &self, const MatrixType &matrix) -> Solver & {
+            +[](Solver& self, const MatrixType& matrix) -> Solver& {
               return self.compute(matrix);
             },
             bp::args("self", "matrix"),
@@ -48,8 +48,8 @@ struct BDCSVDVisitor
             bp::return_self<>())
         .def(
             "compute",
-            +[](Solver &self, const MatrixType &matrix,
-                unsigned int computationOptions) -> Solver & {
+            +[](Solver& self, const MatrixType& matrix,
+                unsigned int computationOptions) -> Solver& {
               return self.compute(matrix, computationOptions);
             },
             bp::args("self", "matrix", "computationOptions"),
@@ -69,7 +69,7 @@ struct BDCSVDVisitor
     expose(classname);
   }
 
-  static void expose(const std::string &name) {
+  static void expose(const std::string& name) {
     bp::class_<Solver, boost::noncopyable>(
         name.c_str(),
         "Class Bidiagonal Divide and Conquer SVD.\n\n"
