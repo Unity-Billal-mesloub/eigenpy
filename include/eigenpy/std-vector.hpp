@@ -33,7 +33,7 @@ namespace details {
 
 /// \brief Check if a PyObject can be converted to an std::vector<T>.
 template <typename T>
-bool from_python_list(PyObject *obj_ptr, T *) {
+bool from_python_list(PyObject* obj_ptr, T*) {
   // Check if it is a list
   if (!PyList_Check(obj_ptr)) return false;
 
@@ -53,7 +53,7 @@ bool from_python_list(PyObject *obj_ptr, T *) {
 
 template <typename vector_type, bool NoProxy>
 struct build_list {
-  static bp::list run(vector_type &vec, const bool deep_copy) {
+  static bp::list run(vector_type& vec, const bool deep_copy) {
     if (deep_copy) return build_list<vector_type, true>::run(vec, true);
 
     bp::list bp_list;
@@ -66,7 +66,7 @@ struct build_list {
 
 template <typename vector_type>
 struct build_list<vector_type, true> {
-  static bp::list run(vector_type &vec, const bool) {
+  static bp::list run(vector_type& vec, const bool) {
     typedef bp::iterator<vector_type> iterator;
     return bp::list(iterator()(vec));
   }
@@ -83,7 +83,7 @@ struct overload_base_get_item_for_std_vector
   typedef size_t index_type;
 
   template <class Class>
-  void visit(Class &cl) const {
+  void visit(Class& cl) const {
     cl.def("__getitem__", &base_get_item_int)
         .def("__getitem__", &base_get_item_slice)
         .def("__getitem__", &base_get_item_list_or_tuple<bp::list>)
@@ -91,8 +91,8 @@ struct overload_base_get_item_for_std_vector
   }
 
  private:
-  static bp::object base_get_item_int(bp::back_reference<Container &> container,
-                                      PyObject *i_) {
+  static bp::object base_get_item_int(bp::back_reference<Container&> container,
+                                      PyObject* i_) {
     index_type idx = convert_index(container.get(), i_);
     typename Container::iterator i = container.get().begin();
     std::advance(i, idx);
@@ -101,21 +101,21 @@ struct overload_base_get_item_for_std_vector
       bp::throw_error_already_set();
     }
 
-    typename bp::to_python_indirect<data_type &,
+    typename bp::to_python_indirect<data_type&,
                                     bp::detail::make_reference_holder>
         convert;
     return bp::object(bp::handle<>(convert(*i)));
   }
 
   static bp::object base_get_item_slice(
-      bp::back_reference<Container &> container, bp::slice slice) {
+      bp::back_reference<Container&> container, bp::slice slice) {
     bp::list out;
     try {
       auto rng =
           slice.get_indices(container.get().begin(), container.get().end());
       // rng.start, rng.stop are iterators; rng.step is int; [start, stop] is
       // closed
-      typename bp::to_python_indirect<value_type &,
+      typename bp::to_python_indirect<value_type&,
                                       bp::detail::make_reference_holder>
           convert;
       // forward or backward
@@ -124,7 +124,7 @@ struct overload_base_get_item_for_std_vector
         out.append(bp::object(bp::handle<>(convert(*it))));
         if (it == rng.stop) break;  // closed interval, include stop
       }
-    } catch (const std::invalid_argument &) {
+    } catch (const std::invalid_argument&) {
       // Boost.Python specifies empty ranges throw invalid_argument.
       // Return [] (matches Python's behavior for empty slices).
       return bp::list();
@@ -134,7 +134,7 @@ struct overload_base_get_item_for_std_vector
 
   template <typename list_or_tuple>
   static bp::object base_get_item_list_or_tuple(
-      bp::back_reference<Container &> c, list_or_tuple idxs) {
+      bp::back_reference<Container&> c, list_or_tuple idxs) {
     const Py_ssize_t m = bp::len(idxs);
     bp::list out;
     for (Py_ssize_t k = 0; k < m; ++k) {
@@ -160,14 +160,14 @@ struct overload_base_get_item_for_std_vector
     return static_cast<index_type>(idx);
   }
 
-  static bp::object elem_ref(Container &c, index_type i) {
-    typename bp::to_python_indirect<value_type &,
+  static bp::object elem_ref(Container& c, index_type i) {
+    typename bp::to_python_indirect<value_type&,
                                     bp::detail::make_reference_holder>
         conv;
     return bp::object(bp::handle<>(conv(c[i])));
   }
 
-  static index_type convert_index(Container &container, PyObject *i_) {
+  static index_type convert_index(Container& container, PyObject* i_) {
     bp::extract<long> i(i_);
     if (i.check()) {
       long index = i();
@@ -203,53 +203,53 @@ struct extract_to_eigen_ref
 
   operator result_type() const { return (*this)(); }
 
-  extract_to_eigen_ref(PyObject *o) : base(o) {}
-  extract_to_eigen_ref(api::object const &o) : base(o.ptr()) {}
+  extract_to_eigen_ref(PyObject* o) : base(o) {}
+  extract_to_eigen_ref(api::object const& o) : base(o.ptr()) {}
 };
 
 /// \brief Specialization of the bp::extract struct for references to
 /// Eigen matrix objects.
 template <typename Scalar, int Rows, int Cols, int Options, int MaxRows,
           int MaxCols>
-struct extract<Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols> &>
+struct extract<Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>&>
     : extract_to_eigen_ref<
           Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>> {
   typedef Eigen::Matrix<Scalar, Rows, Cols, Options, MaxRows, MaxCols>
       MatrixType;
   typedef extract_to_eigen_ref<MatrixType> base;
-  extract(PyObject *o) : base(o) {}
-  extract(api::object const &o) : base(o.ptr()) {}
+  extract(PyObject* o) : base(o) {}
+  extract(api::object const& o) : base(o.ptr()) {}
 };
 
 template <typename Derived>
-struct extract<Eigen::MatrixBase<Derived> &>
+struct extract<Eigen::MatrixBase<Derived>&>
     : extract_to_eigen_ref<Eigen::MatrixBase<Derived>> {
   typedef Eigen::MatrixBase<Derived> MatrixType;
   typedef extract_to_eigen_ref<MatrixType> base;
-  extract(PyObject *o) : base(o) {}
-  extract(api::object const &o) : base(o.ptr()) {}
+  extract(PyObject* o) : base(o) {}
+  extract(api::object const& o) : base(o.ptr()) {}
 };
 
 template <typename Derived>
-struct extract<Eigen::RefBase<Derived> &>
+struct extract<Eigen::RefBase<Derived>&>
     : extract_to_eigen_ref<Eigen::RefBase<Derived>> {
   typedef Eigen::RefBase<Derived> MatrixType;
   typedef extract_to_eigen_ref<MatrixType> base;
-  extract(PyObject *o) : base(o) {}
-  extract(api::object const &o) : base(o.ptr()) {}
+  extract(PyObject* o) : base(o) {}
+  extract(api::object const& o) : base(o.ptr()) {}
 };
 
 namespace converter {
 
 template <typename Type, class Allocator>
-struct reference_arg_from_python<std::vector<Type, Allocator> &>
+struct reference_arg_from_python<std::vector<Type, Allocator>&>
     : arg_lvalue_from_python_base {
   typedef std::vector<Type, Allocator> vector_type;
-  typedef vector_type &ref_vector_type;
+  typedef vector_type& ref_vector_type;
   typedef ref_vector_type result_type;
-  typedef extract<Type &> extract_type;
+  typedef extract<Type&> extract_type;
 
-  reference_arg_from_python(PyObject *py_obj)
+  reference_arg_from_python(PyObject* py_obj)
       : arg_lvalue_from_python_base(converter::get_lvalue_from_python(
             py_obj, registered<vector_type>::converters)),
         m_data(NULL),
@@ -261,15 +261,15 @@ struct reference_arg_from_python<std::vector<Type, Allocator> &>
     // Check if py_obj is a py_list, which can then be converted to an
     // std::vector
     bool is_convertible =
-        ::eigenpy::details::from_python_list(py_obj, (Type *)(0));
+        ::eigenpy::details::from_python_list(py_obj, (Type*)(0));
     if (!is_convertible) return;
 
     typedef ::eigenpy::StdContainerFromPythonList<vector_type> Constructor;
     Constructor::construct(py_obj, &m_data.stage1);
 
-    void *&m_result = const_cast<void *&>(result());
+    void*& m_result = const_cast<void*&>(result());
     m_result = m_data.stage1.convertible;
-    vec_ptr = reinterpret_cast<vector_type *>(m_data.storage.bytes);
+    vec_ptr = reinterpret_cast<vector_type*>(m_data.storage.bytes);
   }
 
   result_type operator()() const {
@@ -280,7 +280,7 @@ struct reference_arg_from_python<std::vector<Type, Allocator> &>
   ~reference_arg_from_python() {
     if (m_data.stage1.convertible == m_data.storage.bytes) {
       // Copy back the reference
-      const vector_type &vec = *vec_ptr;
+      const vector_type& vec = *vec_ptr;
       list bp_list(handle<>(borrowed(m_source)));
       for (size_t i = 0; i < vec.size(); ++i) {
         typename extract_type::result_type elt = extract_type(bp_list[i]);
@@ -291,8 +291,8 @@ struct reference_arg_from_python<std::vector<Type, Allocator> &>
 
  private:
   rvalue_from_python_data<ref_vector_type> m_data;
-  PyObject *m_source;
-  vector_type *vec_ptr;
+  PyObject* m_source;
+  vector_type* vec_ptr;
 };
 
 }  // namespace converter
@@ -326,7 +326,7 @@ struct StdContainerFromPythonList {
   typedef typename details::container_traits<vector_type>::Allocator Allocator;
 
   /// \brief Check if obj_ptr can be converted
-  static void *convertible(PyObject *obj_ptr) {
+  static void* convertible(PyObject* obj_ptr) {
     namespace bp = boost::python;
 
     // Check if it is a list
@@ -348,16 +348,16 @@ struct StdContainerFromPythonList {
 
   /// \brief Allocate the std::vector and fill it with the element contained in
   /// the list
-  static void construct(PyObject *obj_ptr,
-                        bp::converter::rvalue_from_python_stage1_data *memory) {
+  static void construct(PyObject* obj_ptr,
+                        bp::converter::rvalue_from_python_stage1_data* memory) {
     // Extract the list
     bp::object bp_obj(bp::handle<>(bp::borrowed(obj_ptr)));
     bp::list bp_list(bp_obj);
 
-    void *storage =
+    void* storage =
         reinterpret_cast<
-            bp::converter::rvalue_from_python_storage<vector_type> *>(
-            reinterpret_cast<void *>(memory))
+            bp::converter::rvalue_from_python_storage<vector_type>*>(
+            reinterpret_cast<void*>(memory))
             ->storage.bytes;
 
     typedef bp::stl_input_iterator<T> iterator;
@@ -374,7 +374,7 @@ struct StdContainerFromPythonList {
                                        bp::type_id<vector_type>());
   }
 
-  static bp::list tolist(vector_type &self, const bool deep_copy = false) {
+  static bp::list tolist(vector_type& self, const bool deep_copy = false) {
     return details::build_list<vector_type, NoProxy>::run(self, deep_copy);
   }
 };
@@ -389,7 +389,7 @@ struct contains_algo;
 template <typename T>
 struct contains_algo<T, true> {
   template <class Container, typename key_type>
-  static bool run(const Container &container, key_type const &key) {
+  static bool run(const Container& container, key_type const& key) {
     return std::find(container.begin(), container.end(), key) !=
            container.end();
   }
@@ -398,7 +398,7 @@ struct contains_algo<T, true> {
 template <typename T>
 struct contains_algo<T, false> {
   template <class Container, typename key_type>
-  static bool run(const Container &container, key_type const &key) {
+  static bool run(const Container& container, key_type const& key) {
     for (size_t k = 0; k < container.size(); ++k) {
       if (&container[k] == &key) return true;
     }
@@ -413,7 +413,7 @@ struct contains_vector_derived_policies
           contains_vector_derived_policies<Container, NoProxy>> {
   typedef typename Container::value_type key_type;
 
-  static bool contains(Container &container, key_type const &key) {
+  static bool contains(Container& container, key_type const& key) {
     return contains_algo<key_type>::run(container, key);
   }
 };
@@ -430,11 +430,11 @@ struct ExposeStdMethodToStdVector
   typedef StdContainerFromPythonList<Container, NoProxy>
       FromPythonListConverter;
 
-  ExposeStdMethodToStdVector(const CoVisitor &co_visitor)
+  ExposeStdMethodToStdVector(const CoVisitor& co_visitor)
       : m_co_visitor(co_visitor) {}
 
   template <class Class>
-  void visit(Class &cl) const {
+  void visit(Class& cl) const {
     cl.def(m_co_visitor)
         .def("tolist", &FromPythonListConverter::tolist,
              (bp::arg("self"), bp::arg("deep_copy") = false),
@@ -446,13 +446,13 @@ struct ExposeStdMethodToStdVector
         .def(CopyableVisitor<Container>());
   }
 
-  const CoVisitor &m_co_visitor;
+  const CoVisitor& m_co_visitor;
 };
 
 /// Helper to ease ExposeStdMethodToStdVector construction
 template <typename Container, bool NoProxy, typename CoVisitor>
 static ExposeStdMethodToStdVector<Container, NoProxy, CoVisitor>
-createExposeStdMethodToStdVector(const CoVisitor &co_visitor) {
+createExposeStdMethodToStdVector(const CoVisitor& co_visitor) {
   return ExposeStdMethodToStdVector<Container, NoProxy, CoVisitor>(co_visitor);
 }
 
@@ -461,12 +461,12 @@ createExposeStdMethodToStdVector(const CoVisitor &co_visitor) {
 namespace internal {
 template <typename vector_type, bool T_picklable = false>
 struct def_pickle_std_vector {
-  static void run(bp::class_<vector_type> &) {}
+  static void run(bp::class_<vector_type>&) {}
 };
 
 template <typename vector_type>
 struct def_pickle_std_vector<vector_type, true> {
-  static void run(bp::class_<vector_type> &cl) {
+  static void run(bp::class_<vector_type>& cl) {
     cl.def_pickle(PickleVector<vector_type>());
   }
 };
@@ -487,21 +487,21 @@ struct StdVectorPythonVisitor {
   typedef StdContainerFromPythonList<vector_type, NoProxy>
       FromPythonListConverter;
 
-  static void expose(const std::string &class_name,
-                     const std::string &doc_string = "") {
+  static void expose(const std::string& class_name,
+                     const std::string& doc_string = "") {
     expose(class_name, doc_string, EmptyPythonVisitor());
   }
 
   template <typename DerivedVisitor>
-  static void expose(const std::string &class_name,
-                     const bp::def_visitor<DerivedVisitor> &visitor) {
+  static void expose(const std::string& class_name,
+                     const bp::def_visitor<DerivedVisitor>& visitor) {
     expose(class_name, "", visitor);
   }
 
   template <typename DerivedVisitor>
-  static void expose(const std::string &class_name,
-                     const std::string &doc_string,
-                     const bp::def_visitor<DerivedVisitor> &visitor) {
+  static void expose(const std::string& class_name,
+                     const std::string& doc_string,
+                     const bp::def_visitor<DerivedVisitor>& visitor) {
     // Apply visitor on already registered type or if type is not already
     // registered, we define and apply the visitor on it
     auto add_std_visitor =
@@ -518,11 +518,11 @@ struct StdVectorPythonVisitor {
           internal::contains_vector_derived_policies<vector_type, NoProxy>>
           vector_indexing;
 
-      cl.def(bp::init<size_t, const value_type &>(
+      cl.def(bp::init<size_t, const value_type&>(
                  bp::args("self", "size", "value"),
                  "Constructor from a given size and a given value."))
-          .def(bp::init<const vector_type &>(bp::args("self", "other"),
-                                             "Copy constructor"))
+          .def(bp::init<const vector_type&>(bp::args("self", "other"),
+                                            "Copy constructor"))
 
           .def(vector_indexing)
           .def(add_std_visitor);
@@ -542,7 +542,7 @@ struct StdVectorPythonVisitor {
 void EIGENPY_DLLAPI exposeStdVector();
 
 template <typename MatType, typename Alloc = Eigen::aligned_allocator<MatType>>
-void exposeStdVectorEigenSpecificType(const char *name) {
+void exposeStdVectorEigenSpecificType(const char* name) {
   typedef std::vector<MatType, Alloc> VecMatType;
   std::string full_name = "StdVec_";
   full_name += name;
