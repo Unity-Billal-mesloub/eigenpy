@@ -12,6 +12,7 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 
 ### Added
 - Support for Python slice, tuple and list indexing for `std::vector` bindings ([#592](https://github.com/stack-of-tasks/eigenpy/pull/592))
+- ROS: jrl_cmakmodules dependency + kilted CI ([#602](https://github.com/stack-of-tasks/eigenpy/pull/602))
 
 ### Fixed
 - Fix partly the support of the change of API of GeneralizedEigenSolver in Eigen 5+ ([#594](https://github.com/stack-of-tasks/eigenpy/pull/594))
