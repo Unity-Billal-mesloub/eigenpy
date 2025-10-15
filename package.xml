@@ -8,12 +8,13 @@
   <maintainer email="guilhem.saurel@laas.fr">Guilhem Saurel</maintainer>
   <author>Justin Carpentier</author>
   <author>Nicolas Mansard</author>
-  <license>BSD</license>
+  <license>BSD-2-Clause</license>
 
   <url type="website">https://github.com/stack-of-tasks/eigenpy</url>
 
   <build_depend>git</build_depend>
   <build_depend>doxygen</build_depend>
+  <build_depend>jrl_cmakemodules</build_depend>
 
   <depend>python3</depend>
   <depend>python3-numpy</depend>
