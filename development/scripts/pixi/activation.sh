@@ -21,15 +21,8 @@ then
   # it allow to use clang++ as compiler
   export LDFLAGS="-Wl,-rpath,$CONDA_PREFIX/lib -Wl,-rpath-link,$CONDA_PREFIX/lib -L$CONDA_PREFIX/lib"
 fi
-
-# Setup ccache
-export CMAKE_CXX_COMPILER_LAUNCHER=ccache
-
-# Create compile_commands.json for language server
-export CMAKE_EXPORT_COMPILE_COMMANDS=1
-
-# Activate color output with Ninja
-export CMAKE_COLOR_DIAGNOSTICS=1
+# Without -isystem, some LSP can't find headers
+export EIGENPY_CXX_FLAGS="$CXXFLAGS -isystem $CONDA_PREFIX/include"
 
 # Set default build value only if not previously set
 export EIGENPY_BUILD_TYPE=${EIGENPY_BUILD_TYPE:=Release}
