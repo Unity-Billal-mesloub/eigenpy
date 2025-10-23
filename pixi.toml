@@ -6,6 +6,7 @@ platforms = ["linux-64", "osx-64", "osx-arm64", "win-64"]
 channels = ["conda-forge"]
 license = "BSD-2-Clause"
 license-file = "LICENSE"
+preview = ["pixi-build"]
 
 [dependencies]
 ccache = ">=4.9.1"
@@ -19,6 +20,34 @@ libboost-python-devel = ">=1.80.0"
 eigen = ">=3.4.0"
 numpy = ">=1.22.0"
 python = ">=3.9.0"
+scipy = ">=1.10.0"
+
+[package]
+name = { workspace = true }
+version = { workspace = true }
+
+[package.build]
+backend = { name = "pixi-build-cmake", version = "0.3.*" }
+
+[package.build.config]
+extra-args = [
+  "-DGENERATE_PYTHON_STUBS=ON",
+  "-DBUILD_TESTING=OFF",
+  "-DBUILD_TESTING_SCIPY=OFF",
+]
+
+[package.build-dependencies]
+pkg-config = ">=0.29.2"
+
+[package.host-dependencies]
+libboost-devel = ">=1.80.0"
+libboost-python-devel = ">=1.80.0"
+eigen = ">=3.4.0"
+numpy = ">=1.22.0"
+scipy = ">=1.10.0"
+python = ">=3.9.0"
+
+[package.run-dependencies]
 scipy = ">=1.10.0"
 
 [target.unix.activation]
