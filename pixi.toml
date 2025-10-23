@@ -69,26 +69,20 @@ CCACHE_SLOPPINESS = "include_file_ctime,include_file_mtime,pch_defines,time_macr
 [tasks]
 # We must avoid to set CMAKE_CXX_FLAGS because of WIN32
 # https://discourse.cmake.org/t/strictly-appending-to-cmake-lang-flags/6478
-configure = { args = [
-  { arg = "build_dir", default = "build" },
-  { arg = "build_type", default = "$EIGENPY_BUILD_TYPE" },
-  { arg = "python_stubs", default = "$EIGENPY_PYTHON_STUBS" },
-  { arg = "cholmod_support", default = "$EIGENPY_CHOLMOD_SUPPORT" },
-  { arg = "accelerate_support", default = "$EIGENPY_ACCELERATE_SUPPORT" },
-], cmd = [
+configure = { cmd = [
   "CXXFLAGS=$EIGENPY_CXX_FLAGS",
   "cmake",
   "-G",
   "Ninja",
   "-B",
-  "{{ build_dir }}",
+  "build",
   "-S",
   ".",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
-  "-DCMAKE_BUILD_TYPE={{ build_type }}",
-  "-DGENERATE_PYTHON_STUBS={{ python_stubs }}",
-  "-DBUILD_WITH_CHOLMOD_SUPPORT={{ cholmod_support }}",
-  "-DBUILD_WITH_ACCELERATE_SUPPORT={{ accelerate_support }}",
+  "-DCMAKE_BUILD_TYPE=$EIGENPY_BUILD_TYPE",
+  "-DGENERATE_PYTHON_STUBS=$EIGENPY_PYTHON_STUBS",
+  "-DBUILD_WITH_CHOLMOD_SUPPORT=$EIGENPY_CHOLMOD_SUPPORT",
+  "-DBUILD_WITH_ACCELERATE_SUPPORT=$EIGENPY_ACCELERATE_SUPPORT",
 ] }
 build = { cmd = "cmake --build build --target all", depends-on = ["configure"] }
 clean = { cmd = "rm -rf build" }
@@ -105,14 +99,23 @@ tasks = { lint = { cmd = "pre-commit run --all" } }
 tomlkit = ">=0.13.2"
 
 [feature.new-version.tasks]
+configure-new-version = { cmd = [
+  "CXXFLAGS=$EIGENPY_CXX_FLAGS",
+  "cmake",
+  "-G",
+  "Ninja",
+  "-B",
+  "build_new_version",
+  "-S",
+  ".",
+  "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
+  "-DCMAKE_BUILD_TYPE=$EIGENPY_BUILD_TYPE",
+  "-DGENERATE_PYTHON_STUBS=ON",
+  "-DBUILD_WITH_CHOLMOD_SUPPORT=ON",
+  "-DBUILD_WITH_ACCELERATE_SUPPORT=OFF",
+] }
 release-new-version = { cmd = "VERSION=$EIGENPY_VERSION cmake --build build_new_version --target release", depends-on = [
-  { task = "configure", args = [
-    { build_type = "Release" },
-    { build_dir = "build_new_version" },
-    { python_stubs = "ON" },
-    { accelerate_support = "OFF" },
-    { cholmod_support = "ON" },
-  ] },
+  "configure-new-version",
 ] }
 
 # Cholmod support
