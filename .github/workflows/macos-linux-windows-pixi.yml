@@ -34,6 +34,9 @@ jobs:
       CCACHE_DIR: "${GITHUB_WORKSPACE}/.ccache"
       CCACHE_COMPRESS: true
       CCACHE_COMPRESSLEVEL: 6
+      # Since pixi will install a compiler, the compiler mtime will be changed.
+      # This can invalidate the cache (https://ccache.dev/manual/latest.html#config_compiler_check)
+      CCACHE_COMPILERCHECK: content
 
     strategy:
       fail-fast: false
@@ -75,6 +78,10 @@ jobs:
         cache: true
         environments: ${{ matrix.environment }}
 
+    - name: Clear ccache statistics [MacOS/Linux/Windows]
+      run: |
+        pixi run -e ${{ matrix.environment }} ccache -z
+
     - name: Build EigenPy [MacOS/Linux/Windows]
       env:
         CMAKE_BUILD_PARALLEL_LEVEL: 2
@@ -82,6 +89,10 @@ jobs:
         EIGENPY_CXX_FLAGS: ${{ matrix.cxx_options }}
       run: |
         pixi run -e ${{ matrix.environment }} test
+
+    - name: Show ccache statistics [MacOS/Linux/Windows]
+      run: |
+        pixi run -e ${{ matrix.environment }} ccache -sv
 
   check:
     if: always()
