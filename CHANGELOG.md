@@ -16,13 +16,12 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/).
 ### Added
 - Support for Python slice, tuple and list indexing for `std::vector` bindings ([#592](https://github.com/stack-of-tasks/eigenpy/pull/592))
 - ROS: jrl_cmakmodules dependency + kilted CI ([#602](https://github.com/stack-of-tasks/eigenpy/pull/602))
-- `pixi.toml` update ([#603](https://github.com/stack-of-tasks/eigenpy/pull/603)):
-  - Add pixi-build support
-  - Remove pixi 0.57 warnings
+- Add pixi-build support ([#603](https://github.com/stack-of-tasks/eigenpy/pull/603)):
 
 ### Fixed
 - Fix partly the support of the change of API of GeneralizedEigenSolver in Eigen 5+ ([#594](https://github.com/stack-of-tasks/eigenpy/pull/594))
 - Fix Eigen decompositions and solvers for Eigen 5 ([#596](https://github.com/stack-of-tasks/eigenpy/pull/596))
+- Remove pixi 0.57 warnings ([#603](https://github.com/stack-of-tasks/eigenpy/pull/603)):
 
 ## [3.12.0] - 2025-08-12
 
