@@ -78,6 +78,8 @@ configure = { cmd = [
   "build",
   "-S",
   ".",
+  # Don't use standard layout because it's not well implemented on Windows
+  "-DPYTHON_STANDARD_LAYOUT=OFF",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
   "-DCMAKE_BUILD_TYPE=$EIGENPY_BUILD_TYPE",
   "-DGENERATE_PYTHON_STUBS=$EIGENPY_PYTHON_STUBS",
@@ -108,6 +110,8 @@ configure-new-version = { cmd = [
   "build_new_version",
   "-S",
   ".",
+  # Don't use standard layout because it's not well implemented on Windows
+  "-DPYTHON_STANDARD_LAYOUT=OFF",
   "-DCMAKE_INSTALL_PREFIX=$CONDA_PREFIX",
   "-DCMAKE_BUILD_TYPE=$EIGENPY_BUILD_TYPE",
   "-DGENERATE_PYTHON_STUBS=ON",
