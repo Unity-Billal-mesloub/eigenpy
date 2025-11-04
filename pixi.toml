@@ -36,14 +36,6 @@ extra-args = [
   "-DBUILD_TESTING_SCIPY=OFF",
 ]
 
-[package.build.config.targets.win-64]
-extra-args = [
-  "-DPYTHON_SITELIB=%PREFIX%/Lib/site-packages",
-  "-DGENERATE_PYTHON_STUBS=ON",
-  "-DBUILD_TESTING=OFF",
-  "-DBUILD_TESTING_SCIPY=OFF",
-]
-
 [package.build-dependencies]
 pkg-config = ">=0.29.2"
 
