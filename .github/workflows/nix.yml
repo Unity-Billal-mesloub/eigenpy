@@ -16,7 +16,7 @@ jobs:
       fail-fast: false
       matrix:
         os: [ubuntu, macos]
-        eigen: [3, 5]
+        eigen: ["", "-eigen_5"]
     steps:
       - uses: actions/checkout@v6
       - uses: cachix/install-nix-action@v31
@@ -24,7 +24,7 @@ jobs:
         with:
           name: gepetto
           authToken: '${{ secrets.CACHIX_AUTH_TOKEN }}'
-      - run: nix build -L ".#eigenpy-eigen${{ matrix.eigen }}"
+      - run: nix build -L ".#eigenpy${{ matrix.eigen }}"
 
   check:
     if: always()
