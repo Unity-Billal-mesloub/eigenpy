@@ -8,42 +8,18 @@
 
   outputs =
     inputs:
-    inputs.flake-parts.lib.mkFlake { inherit inputs; } {
-      systems = inputs.nixpkgs.lib.systems.flakeExposed;
-      perSystem =
-        { pkgs, self', ... }:
-        {
-          apps.default = {
-            type = "app";
-            program = pkgs.python3.withPackages (_: [ self'.packages.default ]);
-          };
-          devShells.default = pkgs.mkShell { inputsFrom = [ self'.packages.default ]; };
-          packages = {
-            default = self'.packages.eigenpy-eigen5;
-            eigen3 = pkgs.eigen.overrideAttrs (super: rec {
-              version = "3.4.1";
-              src = pkgs.fetchFromGitLab {
-                inherit (super.src) owner repo;
-                tag = version;
-                hash = "sha256-NSq1tUfy2thz5gtsyASsKeYE4vMf71aSG4uXfrX86rk=";
-              };
-              patches = [ ];
-              postPatch = "";
-            });
-            eigen5 = self'.packages.eigen3.overrideAttrs (super: rec {
-              version = "5.0.0";
-              src = pkgs.fetchFromGitLab {
-                inherit (super.src) owner repo;
-                tag = version;
-                hash = "sha256-L1KUFZsaibC/FD6abTXrT3pvaFhbYnw+GaWsxM2gaxM=";
-              };
-            });
-            eigenpy-eigen3 =
-              (pkgs.python3Packages.eigenpy.override { eigen = self'.packages.eigen3; }).overrideAttrs
-                (_: {
-                  src = pkgs.lib.fileset.toSource {
+    inputs.flake-parts.lib.mkFlake { inherit inputs; } (
+      { self, lib, ... }:
+      {
+        systems = inputs.nixpkgs.lib.systems.flakeExposed;
+        flake.overlays = {
+          default = final: prev: {
+            pythonPackagesExtensions = prev.pythonPackagesExtensions ++ [
+              (python-final: python-prev: {
+                eigenpy = python-prev.eigenpy.overrideAttrs {
+                  src = lib.fileset.toSource {
                     root = ./.;
-                    fileset = pkgs.lib.fileset.unions [
+                    fileset = lib.fileset.unions [
                       ./CMakeLists.txt
                       ./doc
                       ./include
@@ -53,9 +29,46 @@
                       ./unittest
                     ];
                   };
-                });
-            eigenpy-eigen5 = self'.packages.eigenpy-eigen3.override { eigen = self'.packages.eigen5; };
+                };
+              })
+            ];
+          };
+          eigen_5 = final: _prev: {
+            eigen = final.eigen_5;
           };
         };
-    };
+        perSystem =
+          {
+            pkgs,
+            pkgs-eigen_5,
+            self',
+            system,
+            ...
+          }:
+          {
+            _module.args = {
+              pkgs = import inputs.nixpkgs {
+                inherit system;
+                overlays = [ self.overlays.default ];
+              };
+              pkgs-eigen_5 = import inputs.nixpkgs {
+                inherit system;
+                overlays = [
+                  self.overlays.eigen_5
+                  self.overlays.default
+                ];
+              };
+            };
+            apps.default = {
+              type = "app";
+              program = pkgs.python3.withPackages (_: [ self'.packages.default ]);
+            };
+            packages = {
+              default = self'.packages.eigenpy;
+              eigenpy = pkgs.python3Packages.eigenpy;
+              eigenpy-eigen_5 = pkgs-eigen_5.python3Packages.eigenpy;
+            };
+          };
+      }
+    );
 }
