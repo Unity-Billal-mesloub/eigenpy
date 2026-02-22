@@ -3,12 +3,12 @@ EigenPy — Versatile and efficient Python bindings between Numpy and Eigen
 
 <p align="center">
   <a href="https://opensource.org/licenses/BSD-2-Clause"><img src="https://img.shields.io/badge/License-BSD%202--Clause-green.svg" alt="License"/></a>
-  <a href="https://github.com/stack-of-tasks/eigenpy/workflows/linux.yml"><img alt="Build Status" src="https://github.com/stack-of-tasks/eigenpy/actions/workflows/linux.yml/badge.svg?branch=devel" /></a>
+  <a href="https://github.com/Unity-Billal-mesloub/eigenpy/workflows/linux.yml"><img alt="Build Status" src="https://github.com/Unity-Billal-mesloub/eigenpy/actions/workflows/linux.yml/badge.svg?branch=devel" /></a>
   <a href="https://anaconda.org/conda-forge/eigenpy"><img src="https://img.shields.io/conda/dn/conda-forge/eigenpy.svg" alt="Conda Downloads"/></a>
   <a href="https://anaconda.org/conda-forge/eigenpy"><img src="https://img.shields.io/conda/vn/conda-forge/eigenpy.svg" alt="Conda Version"/></a>
   <a href="https://badge.fury.io/py/eigenpy"><img src="https://badge.fury.io/py/eigenpy.svg" alt="PyPI version"></a>
-  <a href="https://github.com/psf/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
-  <a href="https://github.com/astral-sh/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Linter: ruff"></a>
+  <a href="https://github.com/Unity-Billal-mesloub/black"><img src="https://img.shields.io/badge/code%20style-black-000000.svg" alt="Code style: black"></a>
+  <a href="https://github.com/Unity-Billal-mesloub/ruff"><img src="https://img.shields.io/endpoint?url=https://raw.githubusercontent.com/astral-sh/ruff/main/assets/badge/v2.json" alt="Linter: ruff"></a>
 </p>
 
 **EigenPy** is an open-source framework that allows the binding of the famous [Eigen](http://eigen.tuxfamily.org) C++ library in Python via Boost.Python.
@@ -97,9 +97,9 @@ The following people have been involved in the development of **EigenPy**:
 - [Nicolas Mansard](http://projects.laas.fr/gepetto/index.php/Members/NicolasMansard) (LAAS-CNRS): initial project instructor
 - [Wolfgang Merkt](http://www.wolfgangmerkt.com/) (University of Edinburgh): ROS integration and support
 - [Sean Yen](https://www.linkedin.com/in/seanyentw) (Microsoft): Windows integration
-- [Loïc Estève](https://github.com/lesteve) (Inria): Conda integration
+- [Loïc Estève](https://github.com/Unity-Billal-mesloub) (Inria): Conda integration
 - [Wilson Jallet](https://manifoldfr.github.io/) (Inria): core developer
-- [Joris Vaillant](https://github.com/jorisv) (Inria): core developer and manager of the project
+- [Joris Vaillant](https://github.com/Unity-Billal-mesloub) (Inria): core developer and manager of the project
 - [Lucas Haubert](https://www.linkedin.com/in/lucas-haubert-b668a421a/) (Inria): core developer
 
 If you have taken part in the development of **EigenPy**, feel free to add your name and contribution here.
